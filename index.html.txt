@@ -1,0 +1,263 @@
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .organism-display {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 30px;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            border-radius: 20px;
+            color: white;
+        }
+
+        .organism-image {
+            font-size: 100px;
+            margin-bottom: 15px;
+        }
+
+        .organism-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            background: #007aff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #0056cc;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .evolution-menu {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .attribute-btn {
+            background: #007aff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            margin: 5px;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .attributes-grid {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Эволюция организма</h1>
+            <p>Развивай свой организм от микроба до разумного существа!</p>
+        </div>
+        
+        <div class="game-area">
+            <div class="organism-display">
+                <div class="organism-image" id="organismEmoji">🦠</div>
+                <div class="organism-name" id="organismName">Микроорганизм</div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <span>📈 Уровень:</span>
+                    <span id="level">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>🧬 ДНК:</span>
+                    <span id="dna">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>🚀 Скорость:</span>
+                    <span id="speed">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>🛡️ Защита:</span>
+                    <span id="defense">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>🧠 Интеллект:</span>
+                    <span id="intelligence">1</span>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn" onclick="explore()">
+                    🔍 Исследовать (+5 ДНК)
+                </button>
+                <button class="btn btn-secondary" onclick="toggleEvolutionMenu()">
+                    🧬 Эволюционировать
+                </button>
+            </div>
+            
+            <div class="evolution-menu" id="evolutionMenu">
+                <h3>Улучшить характеристику (20 ДНК):</h3>
+                <div class="attributes-grid">
+                    <button class="attribute-btn" onclick="evolve('speed')">
+                        🚀 Скорость
+                    </button>
+                    <button class="attribute-btn" onclick="evolve('defense')">
+                        🛡️ Защита
+                    </button>
+                    <button class="attribute-btn" onclick="evolve('intelligence')">
+                        🧠 Интеллект
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let player = {
+            species: "microbe",
+            level: 1,
+            dna: 0,
+            speed: 1,
+            defense: 1,
+            intelligence: 1
+        };
+
+        const species = {
+            microbe: { emoji: "🦠", name: "Микроорганизм" },
+            multicellular: { emoji: "🔬", name: "Многоклеточный" },
+            complex: { emoji: "🐠", name: "Сложный организм" },
+            intelligent: { emoji: "🧠", name: "Разумное существо" }
+        };
+
+        function updateDisplay() {
+            document.getElementById('level').textContent = player.level;
+            document.getElementById('dna').textContent = player.dna;
+            document.getElementById('speed').textContent = player.speed;
+            document.getElementById('defense').textContent = player.defense;
+            document.getElementById('intelligence').textContent = player.intelligence;
+            
+            const speciesData = species[player.species];
+            document.getElementById('organismEmoji').textContent = speciesData.emoji;
+            document.getElementById('organismName').textContent = speciesData.name;
+        }
+
+        function explore() {
+            player.dna += 5;
+            updateDisplay();
+        }
+
+        function toggleEvolutionMenu() {
+            const menu = document.getElementById('evolutionMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function evolve(attribute) {
+            if (player.dna >= 20) {
+                player.dna -= 20;
+                player[attribute] += 2;
+                player.level += 1;
+                
+                if (player.level >= 15) player.species = "intelligent";
+                else if (player.level >= 10) player.species = "complex";
+                else if (player.level >= 5) player.species = "multicellular";
+                
+                updateDisplay();
+                document.getElementById('evolutionMenu').style.display = 'none';
+                alert(`🎉 Улучшено: ${attribute}`);
+            } else {
+                alert("❌ Нужно 20 ДНК!");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
